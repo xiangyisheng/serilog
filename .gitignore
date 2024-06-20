@@ -1,0 +1,29 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+# Ignore Visual Studio files
+.vs/
+bin/
+obj/
+
+# Ignore NuGet packages
+*.nupkg
+/packages/
+
+# Ignore build output
+*.exe
+*.dll
+*.pdb
+
+# Ignore user-specific files
+*.user
+*.suo
+*.sln.docstates
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore macOS specific files
+.DS_Store
