@@ -18,7 +18,18 @@ namespace SerilogDemo
         #region Serilog 相关设置
         internal static string LogFilePath(string fileName) => $@"Logs/{fileName}/{DateTime.Now.Year}.{DateTime.Now.Month}/log_.log";
         internal static readonly string seriCustomProperty = "seriPos";
-        internal static readonly string logOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}][{ProcessName}({ProcessId})][{ThreadName}({ThreadId})][{EnvironmentName}.{MachineName}][{RequestId}] {Message:lj}{NewLine}{Exception}";
+        /*
+         * Serilog 支持的一些常用占位符：
+         * {Message}: 日志消息的占位符，用于插入日志消息的文本。
+         * {Timestamp}: 时间戳的占位符，用于插入日志记录的时间。可以通过提供格式字符串来自定义时间戳的格式，例如 {Timestamp:yyyy-MM-dd HH:mm:ss}。
+         * {Level}: 日志级别的占位符，用于插入日志记录的级别，例如 Information、Warning、Error 等。
+         * {Exception}: 异常信息的占位符，用于插入异常的详细信息。通常与日志记录方法一起使用，例如 _logger.LogError(exception, "An error occurred.")。
+         * {SourceContext}: 日志源的占位符，用于插入日志记录的源上下文信息，通常是记录日志的类的名称。
+         * {Properties}: 结构化属性的占位符，用于插入结构化日志的属性和值。例如，{Properties} = {PropertyName1}={PropertyValue1}, {PropertyName2}={PropertyValue2}, ...。
+         * {NewLine}: 换行符的占位符，用于在日志消息中插入换行。
+         * {ExceptionDetail}: 异常详细信息的占位符，用于插入完整的异常堆栈跟踪信息。
+         */
+        internal static readonly string logOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}][{ProcessName}({ProcessId})][{ThreadName}({ThreadId})][{EnvironmentName}.{MachineName}][{RequestId}] {SourceContext} - {Message:lj}{NewLine}{Properties}{NewLine}{Exception}{NewLine}{ExceptionDetail}";
         internal static readonly long? fileSize = 31457280L;
         /// <summary>
         /// 初始化serilog
@@ -233,7 +244,7 @@ namespace SerilogDemo
                 logger.WriteTo.Logger(lg =>
                 {
                     lg.Filter.ByIncludingOnly(Matching.WithProperty<LogType>(SerilogHelper.seriCustomProperty, p => p == q));
-                    lg.WriteTo.File(SerilogHelper.LogFilePath(q.ToString()), rollingInterval: RollingInterval.Day, fileSizeLimitBytes: SerilogHelper.fileSize, rollOnFileSizeLimit: true,
+                    lg.WriteTo.File(path: SerilogHelper.LogFilePath(q.ToString()), rollingInterval: RollingInterval.Day, fileSizeLimitBytes: SerilogHelper.fileSize, rollOnFileSizeLimit: true,
                         outputTemplate: SerilogHelper.logOutputTemplate);
                 });
             });
