@@ -1,47 +1,57 @@
 using Serilog;
+using SerilogDemo;
 
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("log.txt",
-        rollingInterval: RollingInterval.Day,
-        rollOnFileSizeLimit: true)
-    .WriteTo.Seq("https://localhost:7088")
-    .CreateLogger();
-
-var builder = WebApplication.CreateBuilder(args);
-
-// 注册Serilog日志记录器为ILogger接口的实现
-builder.Services.AddLogging(loggingBuilder =>
+try
 {
-    loggingBuilder.ClearProviders();
-    loggingBuilder.AddSerilog();
-});
+    SerilogHelper.InitSerilog();
 
-// Add services to the container.
+    Log.Information("Starting web host");
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog();
+    builder.Services.AddSingleton<ISeriLogger, SeriLogger>();
 
-var app = builder.Build();
+    // 注册Serilog日志记录器为ILogger接口的实现
+    builder.Services.AddLogging(loggingBuilder =>
+    {
+        loggingBuilder.ClearProviders();
+        loggingBuilder.AddSerilog();
+    });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Add services to the container.
+
+    builder.Services.AddControllers();
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
+    builder.Host.UseSerilog();
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseSerilogRequestLogging();
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
 }
-
-app.UseSerilogRequestLogging();
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Host terminated unexpectedly");
+}
+finally
+{
+    Log.Information("Ending web host");
+    Log.CloseAndFlush();
+}

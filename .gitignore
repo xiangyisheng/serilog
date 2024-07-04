@@ -23,7 +23,7 @@ obj/
 
 # Ignore logs
 *.log
-logs/
+[Ll]ogs/
 
 # Ignore macOS specific files
 .DS_Store
